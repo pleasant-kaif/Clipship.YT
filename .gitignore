@@ -20,3 +20,8 @@ clipship.db-wal
 youtube_client_secret.json
 youtube_token.json
 youtube_*.json
+
+repo_demo/frames/
+repo_demo/narr_*.wav
+repo_demo/adj_*.wav
+repo_demo/narration.wav
