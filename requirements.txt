@@ -1,0 +1,8 @@
+Flask>=3.0,<4.0
+faster-whisper>=1.1,<2.0
+google-api-python-client>=2.150,<3.0
+google-auth-oauthlib>=1.2,<2.0
+imageio-ffmpeg>=0.5,<1.0
+yt-dlp>=2025.1.15
+tzdata>=2025.1
+waitress>=3.0,<4.0

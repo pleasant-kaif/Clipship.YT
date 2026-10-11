@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f8f8f6">
+    <title>Clipship.YT — YouTube automation studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='automation.css', v='seo-agent-v1-20261010') }}">
+</head>
+<body class="automation-body">
+    <div class="app-shell automation-shell">
+        <header class="topbar">
+            <a class="brand" href="/" aria-label="Clipship home">
+                <span class="brand-mark"><span></span><span></span><span></span></span>
+                <span>clipship<span class="brand-dot">.</span>yt</span>
+            </a>
+            <div class="topbar-right">
+                <span class="local-status"><span class="status-dot"></span> Private · on this computer</span>
+                <a class="text-button" href="/">← Manual clipper</a>
+            </div>
+        </header>
+
+        <main class="studio-main">
+            <section class="studio-heading">
+                <div>
+                    <div class="eyebrow"><span class="eyebrow-line"></span> YOUR CHANNEL, YOUR CALL</div>
+                    <h1>Automation <span>studio.</span></h1>
+                    <p>Scout trends. Make captions. Preview generated clips before scheduling; authorized original videos can publish directly.</p>
+                </div>
+                <div class="studio-live"><span class="status-dot"></span> Local scheduler</div>
+            </section>
+
+            <div id="studio-notice" class="studio-notice" role="status" aria-live="polite" hidden></div>
+
+            <section class="studio-grid">
+                <article class="studio-card quota-card">
+                    <div class="card-heading">
+                        <div><span class="card-kicker">YOUR API BUDGET</span><h2>Daily quota</h2></div>
+                        <span id="quota-date" class="date-pill"></span>
+                    </div>
+                    <div class="quota-summary"><strong id="quota-used">—</strong><span>used</span><span class="quota-divider">/</span><strong id="quota-cap">—</strong><span>units</span></div>
+                    <div class="quota-track" role="progressbar" aria-label="YouTube API quota used"><span id="quota-fill"></span></div>
+                    <div class="quota-subline"><span id="quota-left">Loading remaining quota…</span><span id="quota-percent"></span></div>
+                    <div id="quota-projection" class="quota-projection"></div>
+                    <div class="quota-tiers">
+                        <div><span class="tier-indicator tier-upload"></span><span>Reserved for uploads</span><strong id="tier-upload">8,000</strong></div>
+                        <div><span class="tier-indicator tier-trends"></span><span>Trend reads</span><strong>1,000</strong></div>
+                        <div><span class="tier-indicator tier-engagement"></span><span>Engagement</span><strong>1,000</strong></div>
+                    </div>
+                    <div id="quota-warnings" class="quota-warnings"></div>
+                </article>
+
+                <article class="studio-card connection-card">
+                    <div class="card-heading">
+                        <div><span class="card-kicker">ACCOUNT ACCESS</span><h2>YouTube connection</h2></div>
+                        <span id="oauth-badge" class="connection-badge">Checking…</span>
+                    </div>
+                    <p>Connect your YouTube channel through Google OAuth. Clipship stores its refresh token locally and requests permission only to manage your YouTube account.</p>
+                    <ol class="setup-steps">
+                        <li>In Google Cloud, enable <strong>YouTube Data API v3</strong> and create an OAuth client.</li>
+                        <li>Add <code>http://127.0.0.1:5000/api/youtube/callback</code> as a redirect URI.</li>
+                        <li>Upload the downloaded OAuth client JSON. Only explicitly approved clips can upload.</li>
+                    </ol>
+                    <form id="oauth-file-form" class="oauth-file-form">
+                        <label class="file-picker">Google OAuth Web client JSON<input id="oauth-file" type="file" name="client_secret" accept=".json,application/json" required></label>
+                        <button id="oauth-file-submit" class="button button-secondary" type="submit">Save locally</button>
+                    </form>
+                    <div class="connection-actions">
+                        <button id="connect-youtube" class="button button-primary" type="button">Connect YouTube account →</button>
+                        <button id="disconnect-youtube" class="text-button" type="button" hidden>Disconnect</button>
+                    </div>
+                    <p class="setup-hint">OAuth client and refresh token stay in ignored local files. Videos default to <strong>private</strong>.</p>
+                </article>
+            </section>
+
+            <section class="studio-card settings-card">
+                <div class="card-heading settings-heading">
+                    <div><span class="card-kicker">DAILY RUN</span><h2>Set your schedule</h2></div>
+                    <span class="mini-note">Country and category are exact filters; language and Indian-region matches are best-effort. Results are reused for 15 minutes; a fresh search plus details lookup costs up to 101 API units.</span>
+                </div>
+                <form id="settings-form" class="settings-grid">
+                    <label>Country / region<input id="setting-region" name="region" maxlength="2" placeholder="US" required></label>
+                    <label>Trending category<select id="setting-category" name="category_id"></select></label>
+                    <label>Search language<select id="setting-language" name="trend_language"></select></label>
+                    <label>Indian region<select id="setting-india-region" name="india_region"></select></label>
+                    <label>Scheduled clip upload time<input id="setting-time" name="schedule_time" type="time" required></label>
+                    <label>Local timezone<input id="setting-timezone" name="timezone" placeholder="Asia/Kolkata" required></label>
+                    <label>Daily clip target<input id="setting-clips" name="clips_per_day" type="number" min="1" max="10" required></label>
+                    <label>Daily Google quota cap<input id="setting-quota" name="quota_cap" type="number" min="10000" max="1000000" step="1000" required></label>
+                    <label>New upload visibility<select id="setting-privacy" name="upload_privacy"><option value="private">Private (recommended)</option><option value="unlisted">Unlisted</option><option value="public">Public</option></select></label>
+                    <label class="schedule-toggle"><input id="setting-auto-scout" name="auto_scout" type="checkbox"><span>Scout trends automatically once a day</span></label>
+                    <div class="settings-actions"><button class="button button-primary" type="submit">Save schedule</button><button id="run-scout" class="button button-secondary" type="button">Search videos now · up to 101 units →</button><span id="scheduler-message" class="mini-note">Runs while this app is open.</span></div>
+                </form>
+                <div class="quota-explainer"><strong>10,000-unit budget:</strong> 8,000 units are reserved for uploads (five videos/day), 1,000 for engagement, and 1,000 for trends (100 units for search, plus 1 unit for the separate public-statistics/duration lookup when results exist). Approved extras are scheduled across later days automatically. If you increase your Google quota, raise your configured cap here. <span id="overage-warning"></span></div>
+            </section>
+
+            <section class="section-header">
+                <div><span class="card-kicker">01 / SCOUT</span><h2>Trending videos</h2><p id="trending-count">Find trends, then import and publish a local video you own or are authorized to publish.</p></div>
+                <button id="refresh-dashboard" class="text-button" type="button">↻ Refresh</button>
+            </section>
+            <div class="rights-banner"><strong>Country and category filters are applied by YouTube; language and Indian-region matching are explicitly best-effort.</strong> Language uses YouTube's relevance-language hint plus local title/description text scoring. India-zone matching only ranks videos whose text mentions a zone's state names; it cannot verify spoken language or creator location, and non-matches may still appear. A fresh search costs 100 quota units plus 1 unit for the separate public statistics/duration lookup when videos are returned (up to 101 total); automatic refreshes reuse matching results for 15 minutes. Like/comment counts may be hidden by a video's owner. Search results are not permission to reuse a video; add a local source only if you own it or have permission.</div>
+            <section id="trending-grid" class="trending-grid" aria-live="polite">
+            <div class="empty-card">Connect YouTube and search videos for your selected country/region and category. Language/Indian-region matching is best-effort. A fresh search and separate details lookup cost up to 101 quota units; matching automatic searches reuse cached results for 15 minutes.</div>
+            </section>
+
+            <section class="section-header pipeline-section-heading">
+                <div><span class="card-kicker">02 / PROCESS</span><h2>Clip pipeline tracker</h2><p>Track direct original-video uploads and any clips already moving through captioning, review, scheduling, and YouTube. This view refreshes every 10 seconds.</p></div>
+                <span id="pipeline-updated" class="date-pill">Waiting for pipeline status</span>
+            </section>
+            <section id="pipeline-summary" class="pipeline-summary" aria-label="Clip pipeline counts"></section>
+            <section id="pipeline-grid" class="pipeline-grid" aria-live="polite"><div class="empty-card">No local sources or scheduled clips yet. Choose authorized local footage from a trend to start processing.</div></section>
+
+            <section class="section-header review-section-heading">
+                <div><span class="card-kicker">03 / REVIEW</span><h2>Approve before publishing</h2><p>Watch each one-minute, vertical 9:16 clip with its burned-in Whisper captions.</p></div>
+                <span id="review-count" class="date-pill">0 awaiting review</span>
+            </section>
+            <section id="review-grid" class="review-grid"><div class="empty-card">No finished clips are waiting for approval. Current processing stages and any errors appear in the pipeline tracker above.</div></section>
+
+            <section class="section-header schedule-section-heading">
+                <div><span class="card-kicker">04 / SCHEDULE</span><h2>Greenlit &amp; published</h2><p>Only approved clips enter the scheduled upload queue.</p></div>
+            </section>
+            <div class="rights-banner"><strong>Direct import publishes your local original video immediately after you confirm publishing rights.</strong> Clipship does not trim, caption, or impose a minimum duration in this path. Keep the app running and YouTube connected until upload finishes. YouTube's own format, account duration, file-size, and policy limits still apply; Clipship accepts local files up to 2 GB. Generated clips that are awaiting review still require approval and use the scheduled clip upload time above.</div>
+            <section id="scheduled-list" class="scheduled-list"><div class="empty-card">No clips are scheduled or published yet.</div></section>
+
+            <section class="section-header engagement-section-heading">
+                <div><span class="card-kicker">05 / ENGAGE</span><h2>Your comment inbox</h2><p>Ollama drafts trend-aware video descriptions before upload and comment replies for review. <span id="ollama-badge" class="connection-badge">Checking Ollama…</span> <button id="refresh-ollama" class="text-button" type="button">Check</button> <button id="start-ollama" class="text-button ollama-start-btn" type="button" hidden>▶ Start Ollama</button></p></div>
+                <button id="sync-comments" class="button button-secondary" type="button">Refresh comments · 1 unit/video</button>
+            </section>
+            <div class="engagement-note">Every like and reply requires your explicit click; there are no automated or bulk comments. The daily engagement quota is capped at 1,000 units. Replies are limited to your published clips, one per comment, and external links are blocked.</div>
+            <section id="engagement-grid" class="engagement-grid"><div class="empty-card">Connect your channel and publish an approved clip to manage comments.</div></section>
+        </main>
+        <footer><a class="brand footer-brand" href="/"><span class="brand-mark"><span></span><span></span><span></span></span><span>clipship<span class="brand-dot">.</span>yt</span></a><span>SQLite state · local Whisper · quota-checked YouTube API · rights-confirmed uploads</span></footer>
+    </div>
+    <script src="{{ url_for('static', filename='automation.js', v='ollama-start-v2-20261010') }}" defer></script>
+</body>
+</html>

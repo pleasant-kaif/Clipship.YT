@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f8f8f6">
+    <title>Clipship.YT — Find the moments worth sharing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="app-shell">
+        <header class="topbar">
+            <a class="brand" href="/" aria-label="Clipship home">
+                <span class="brand-mark"><span></span><span></span><span></span></span>
+                <span>clipship<span class="brand-dot">.</span>yt</span>
+            </a>
+            <div class="topbar-right">
+                <span class="local-status"><span class="status-dot"></span> Runs locally</span>
+                <a class="text-button" href="/automation">Automation studio →</a>
+                <a class="icon-link" href="#how-it-works" aria-label="How it works" title="How it works">?</a>
+            </div>
+        </header>
+
+        <main>
+            <section class="hero">
+                <div class="eyebrow"><span class="eyebrow-line"></span> YOUR NEXT GREAT CLIP STARTS HERE</div>
+                <h1>Long video.<br><span>Shorter story.</span></h1>
+                <p class="hero-copy">Find the moments people will want to watch again.<br>Choose your highlights. Make them yours.</p>
+            </section>
+
+            <section class="workspace" aria-label="Video clipper">
+                <div class="step-heading">
+                    <span class="step-number">01</span>
+                    <div><h2>Drop in a video</h2><p>Paste a YouTube link to get started</p></div>
+                </div>
+
+                <form id="analyze-form" class="source-form">
+                    <label class="sr-only" for="video-url">YouTube video link</label>
+                    <div class="url-field">
+                        <span class="url-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><path d="M21.58 7.19a2.99 2.99 0 0 0-2.1-2.12C17.62 4.56 12 4.56 12 4.56s-5.62 0-7.48.51a2.99 2.99 0 0 0-2.1 2.12A31 31 0 0 0 1.9 12a31 31 0 0 0 .52 4.81 2.99 2.99 0 0 0 2.1 2.12c1.86.51 7.48.51 7.48.51s5.62 0 7.48-.51a2.99 2.99 0 0 0 2.1-2.12A31 31 0 0 0 22.1 12a31 31 0 0 0-.52-4.81ZM9.96 15.25v-6.5L15.58 12l-5.62 3.25Z"/></svg>
+                        </span>
+                        <input id="video-url" name="url" type="url" placeholder="https://www.youtube.com/watch?v=..." required autocomplete="url">
+                        <button id="analyze-button" class="button button-primary" type="submit">Transcribe &amp; find highlights <span aria-hidden="true">↗</span></button>
+                    </div>
+                    <label class="rights-check">
+                        <input id="rights-check" type="checkbox" required>
+                        <span class="check-box" aria-hidden="true"></span>
+                        <span>I own this video or have permission to create clips from it.</span>
+                    </label>
+                    <div class="analysis-options">
+                        <span class="options-label">CHOOSE HOW TO CLIP</span>
+                        <label class="mode-option" for="mode-manual">
+                            <input id="mode-manual" type="radio" name="mode" value="manual">
+                            <span class="mode-icon">↔</span>
+                            <span><strong>Set times manually</strong><small>Pick your own start and end</small></span>
+                            <span class="mode-radio"></span>
+                        </label>
+                        <label class="mode-option" for="mode-captions">
+                            <input id="mode-captions" type="radio" name="mode" value="captions">
+                            <span class="mode-icon">Aa</span>
+                            <span><strong>Find highlights</strong><small>YouTube captions · quick</small></span>
+                            <span class="mode-radio"></span>
+                        </label>
+                        <label class="mode-option selected" id="ai-option" for="mode-ai">
+                            <input id="mode-ai" type="radio" name="mode" value="ai" checked>
+                            <span class="mode-icon ai-icon">✳</span>
+                            <span><strong>Local AI transcription</strong><small id="ai-description">Available · runs on your computer</small></span>
+                            <span class="mode-radio"></span>
+                        </label>
+                        <p class="setup-note" id="ai-note" hidden>Local AI is required but not installed. Stop the app, then run <code>run.bat</code> again to install it.</p>
+                    </div>
+                </form>
+
+                <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+
+                <section id="progress-panel" class="progress-panel" aria-live="polite" hidden>
+                    <div class="progress-top"><span class="spinner"></span><div><strong id="progress-title">Finding the good bits…</strong><p id="progress-message">This can take a little while.</p></div></div>
+                    <div class="progress-track"><span></span></div>
+                </section>
+
+                <section id="results" class="results" hidden>
+                    <div class="video-summary">
+                        <img id="video-thumbnail" alt="" hidden>
+                        <div><span class="video-kicker">VIDEO ANALYZED</span><h3 id="video-title"></h3><p id="video-meta"></p></div>
+                        <button id="clear-results" class="text-button" type="button">Start over</button>
+                    </div>
+                    <div class="step-heading result-heading">
+                        <span class="step-number">02</span>
+                        <div><h2>Your moments</h2><p id="suggestion-description">A few promising places to start. Pick the ones you like.</p></div>
+                    </div>
+                    <div id="highlight-list" class="highlight-list"></div>
+                    <div id="manual-editor" class="manual-editor" hidden>
+                        <p>Enter clip times in seconds. For example, 65.5 starts at 1:05.5.</p>
+                        <div class="manual-time-fields">
+                            <label>Start time (seconds)<input id="manual-start" type="number" min="0" step="0.1" placeholder="0"></label>
+                            <label>End time (seconds)<input id="manual-end" type="number" min="0" step="0.1" placeholder="30"></label>
+                            <button id="add-manual-clip" class="button button-secondary" type="button">Add time range <span aria-hidden="true">+</span></button>
+                        </div>
+                        <div id="manual-list" class="manual-list"></div>
+                    </div>
+                    <div class="render-row">
+                        <div><strong id="selection-count">0 clips selected</strong><span>MP4 · saved on this computer</span></div>
+                        <button id="create-button" class="button button-primary" type="button" disabled>Create selected clips <span aria-hidden="true">→</span></button>
+                    </div>
+                </section>
+
+                <section id="download-results" class="download-results" hidden>
+                    <div class="download-heading"><div><span class="step-number">03</span><h2>Your clips are ready</h2></div><p>Saved to the <code>clips</code> folder in your project.</p></div>
+                    <div id="download-list" class="download-list"></div>
+                    <button id="make-more" class="text-button" type="button">← Back to highlights</button>
+                </section>
+
+                <div class="privacy-note"><span class="lock-icon">⌑</span> Your videos are processed on your computer. Source videos aren’t kept after clipping.</div>
+            </section>
+
+            <section id="how-it-works" class="how-it-works">
+                <div class="eyebrow"><span class="eyebrow-line"></span> SIMPLE BY DESIGN</div>
+                <div class="how-grid">
+                    <div><span class="how-number">01 / FIND</span><h3>Start with a link</h3>                    <p>Set clip times yourself, or scan a video you’re allowed to clip with captions or local AI.</p></div>
+                    <div><span class="how-number">02 / PICK</span><h3>You’re in the editor</h3><p>Set your own time ranges or choose the suggested moments you want to keep.</p></div>
+                    <div><span class="how-number">03 / CLIP</span><h3>Make it a moment</h3><p>Render downloadable MP4 clips locally. Your original stays yours.</p></div>
+                </div>
+            </section>
+        </main>
+        <footer><a class="brand footer-brand" href="/"><span class="brand-mark"><span></span><span></span><span></span></span><span>clipship<span class="brand-dot">.</span>yt</span></a><span>A small tool for the moments that matter.</span></footer>
+    </div>
+    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</body>
+</html>

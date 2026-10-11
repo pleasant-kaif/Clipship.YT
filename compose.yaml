@@ -1,0 +1,21 @@
+services:
+  clipship:
+    build: .
+    image: clipship-yt:local
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${CLIPSHIP_PORT:-5000}:5000"
+    environment:
+      CLIPSHIP_DATA_DIR: /data
+      HF_HOME: /data/huggingface
+      IMAGEIO_FFMPEG_EXE: /usr/bin/ffmpeg
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      PORT: "5000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - clipship-data:/data
+    init: true
+
+volumes:
+  clipship-data:
